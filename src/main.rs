@@ -1,4 +1,4 @@
-use std::{env::{self, var}, process::{Command}, error::Error, io::{self, Write, BufRead}, fs};
+use std::{env::{self, var}, process::Command, error::Error, io::{self, Write, BufRead}, fs};
 use bytes::Bytes;
 use owo_colors::{colors::{*, css::{OrangeRed, MediumPurple}, xterm::DarkPurple}, OwoColorize};
 
@@ -11,15 +11,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let cmd_args: Vec<String> = env::args().collect();
 
-    let query = if cmd_args.len() <= 1 {
-        input(format!("{}", "Enter Query: ".fg::<DarkPurple>())).expect("Failed to grab query from you!")
-    } else {
-        cmd_args[1..].join(" ")
-    };
+    let query = ask_query(cmd_args);
 
     println!("{}\n", "Searching...".fg::<BrightBlue>());
 
-    let books = aghpb::search(query, None, None).await?;
+    let books = aghpb::search(query, None, Some(25)).await?;
 
     for (index, book) in books.iter().enumerate() {
         println!(
@@ -44,18 +40,34 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 
+fn ask_query(cmd_args: Vec<String>) -> String {
+    let query = if cmd_args.len() <= 1 {
+        input(format!("{}", "Enter Query: ".fg::<DarkPurple>())).expect("Failed to grab query from you!")
+    } else {
+        cmd_args[1..].join(" ")
+    };
+
+    if query == "" {
+        println!("Uhhh, enter a query idiot!");
+        ask_query(cmd_args)
+    } else {
+        query
+    }
+}
+
 fn display_book(raw_bytes: Bytes) {
+    println!("{}", "Writing file for book...".fg::<White>());
+
+    fs::write(get_path() + TEMP_BOOK_NAME, raw_bytes).expect("Failed to write book to disk!");
+
     println!("{}", "Displaying book...".fg::<MediumPurple>());
 
     let process = if cfg!(target_os = "windows") {
-        Command::new("cmd")
-            .args(["/C", "echo UwU! No support yet."])
+        Command::new("%SystemRoot%/System32/rundll32.exe")
+            .arg("'%ProgramFiles%/Windows Photo Viewer/PhotoViewer.dll'")
+            .arg(get_path() + TEMP_BOOK_NAME)
             .spawn()
     } else { // If you want MacOS support, contribute please.
-        fs::write(
-            get_path() + TEMP_BOOK_NAME, raw_bytes
-        ).expect("Failed to write book to disk!");
-
         Command::new("xdg-open")
             .arg(get_path() + TEMP_BOOK_NAME)
             .spawn()
@@ -76,11 +88,12 @@ fn input(prompt: String) -> io::Result<String> {
         .map(|x| x.trim_end().to_owned())
 }
 
+/// Function that returns temporary storage path for book images.
 fn get_path() -> String {
     if cfg!(target_os = "windows") {
-        "owo".to_string()
+        var("AppData").expect("Failed to find Windows AppData environment variable!") + TEMP_DIR
     } else { // If you want MacOS support, contribute please.
-        var("HOME").expect("Failed to find HOME environment variable!") + "/.config" + TEMP_DIR
+        var("HOME").expect("Failed to find HOME environment variable! Are you on Linux?") + "/.config" + TEMP_DIR
     }
 }
 
