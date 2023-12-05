@@ -1,5 +1,5 @@
-use std::{env::{self, var}, process::Command, error::Error, io::{self, Write, BufRead}, fs};
 use bytes::Bytes;
+use std::{env::{self, var}, process::Command, error::Error, io::{self, Write, BufRead}, fs};
 use owo_colors::{colors::{*, css::{OrangeRed, MediumPurple}, xterm::DarkPurple}, OwoColorize};
 
 const TEMP_DIR: &str = "/aghpb-cli";
@@ -8,6 +8,7 @@ const TEMP_BOOK_NAME: &str = "/-_-.png";
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
     check_dir();
+    fix_win_colour();
 
     let cmd_args: Vec<String> = env::args().collect();
 
@@ -56,20 +57,20 @@ fn ask_query(cmd_args: Vec<String>) -> String {
 }
 
 fn display_book(raw_bytes: Bytes) {
-    println!("{}", "Writing file for book...".fg::<White>());
+    println!("{}", "Writing image...".fg::<BrightWhite>());
 
-    fs::write(get_path() + TEMP_BOOK_NAME, raw_bytes).expect("Failed to write book to disk!");
+    fs::write(get_path(Some(TEMP_BOOK_NAME)), raw_bytes).expect("Failed to write book to disk!");
 
     println!("{}", "Displaying book...".fg::<MediumPurple>());
 
     let process = if cfg!(target_os = "windows") {
-        Command::new("%SystemRoot%/System32/rundll32.exe")
-            .arg("'%ProgramFiles%/Windows Photo Viewer/PhotoViewer.dll'")
-            .arg(get_path() + TEMP_BOOK_NAME)
+        Command::new("cmd")
+            .arg("/c")
+            .arg(get_path(Some(TEMP_BOOK_NAME)))
             .spawn()
     } else { // If you want MacOS support, contribute please.
         Command::new("xdg-open")
-            .arg(get_path() + TEMP_BOOK_NAME)
+            .arg(get_path(Some(TEMP_BOOK_NAME)))
             .spawn()
     };
 
@@ -89,16 +90,28 @@ fn input(prompt: String) -> io::Result<String> {
 }
 
 /// Function that returns temporary storage path for book images.
-fn get_path() -> String {
+fn get_path(target_file: Option<&str>) -> String {
+    let target_file = target_file.unwrap_or("".into()).to_owned();
+
     if cfg!(target_os = "windows") {
-        var("AppData").expect("Failed to find Windows AppData environment variable!") + TEMP_DIR
+        var("AppData").expect("Failed to find Windows AppData environment variable!") + &(TEMP_DIR.to_owned() + &target_file).replace("/", r"\")
     } else { // If you want MacOS support, contribute please.
-        var("HOME").expect("Failed to find HOME environment variable! Are you on Linux?") + "/.config" + TEMP_DIR
+        var("HOME").expect("Failed to find HOME environment variable! Are you on Linux?") + "/.config" + &TEMP_DIR + &target_file
     }
 }
 
-fn check_dir() { // TODO: Add windows and it's path.
-    if !(fs::metadata(get_path()).is_ok()) {
-        fs::create_dir(get_path()).expect("Couldn't create temporary directory.");
+fn fix_win_colour() {
+    if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .arg("/c")
+            .arg("color")
+            .spawn()
+            .expect("Failed to enable colours in Windows 10 cmd terminal!");
+    }
+}
+
+fn check_dir() {
+    if !(fs::metadata(get_path(None)).is_ok()) {
+        fs::create_dir(get_path(None)).expect("Couldn't create temporary directory.");
     }
 }
