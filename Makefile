@@ -1,5 +1,8 @@
 build:
-	echo "soon tm..."
+	cargo build --release
 
-build-windows:
-	cargo build --target x86_64-pc-windows-gnu
+install:
+	cp ./target/release/aghpb-cli /usr/local/bin
+
+clean:
+	cargo clean
