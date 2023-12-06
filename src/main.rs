@@ -14,45 +14,56 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let query = ask_query(cmd_args);
 
-    println!("{}\n", "Searching...".fg::<BrightBlue>());
+    if !query.is_none() {
+        println!("{}\n", "Searching...".fg::<BrightBlue>());
 
-    let books = aghpb::search(query, None, Some(25)).await?;
+        let books = aghpb::search(query.unwrap(), None, Some(25)).await?;
 
-    for (index, book) in books.iter().enumerate() {
-        println!(
-            "{}) {} [{}]", 
-            index + 1, 
-            book.name.fg::<OrangeRed>(), 
-            book.commit_author.fg::<Black>()
-        );
+        for (index, book) in books.iter().enumerate() {
+            println!(
+                "{}) {} [{}]", 
+                index + 1, 
+                book.name.fg::<OrangeRed>(), 
+                book.commit_author.fg::<Black>()
+            );
+        }
+
+        let choice = input(
+            format!("\nSelect your book ({} - {}): ", 1, books.len())
+        ).expect("We failed to grab your input!");
+
+        println!("{}", "Getting book...".fg::<BrightBlue>());
+        let chosen_book = &books[choice.parse::<usize>().expect("Failed to parse your choice into an integer.") - 1];
+        let chosen_book = chosen_book.get_book().await.expect("Failed to get book's image!");
+
+        display_book(chosen_book.raw_bytes);
     }
-
-    let choice = input(
-        format!("\nSelect your book ({} - {}): ", 1, books.len())
-    ).expect("We failed to grab your input!");
-
-    println!("{}", "Getting book...".fg::<BrightBlue>());
-    let chosen_book = &books[choice.parse::<usize>().expect("Failed to parse your choice into an integer.") - 1];
-    let chosen_book = chosen_book.get_book().await.expect("Failed to get book's image!");
-
-    display_book(chosen_book.raw_bytes);
 
     Ok(())
 }
 
 
-fn ask_query(cmd_args: Vec<String>) -> String {
+fn ask_query(cmd_args: Vec<String>) -> Option<String> {
     let query = if cmd_args.len() <= 1 {
         input(format!("{}", "Enter Query: ".fg::<DarkPurple>())).expect("Failed to grab query from you!")
     } else {
         cmd_args[1..].join(" ")
     };
 
+    if query == "--help" {
+        println!("
+USAGE: aghpb-cli {{query}}
+
+--help: Shows this message.
+        ");
+        return None;
+    }
+
     if query == "" {
         println!("Uhhh, enter a query idiot!");
         ask_query(cmd_args)
     } else {
-        query
+        Some(query)
     }
 }
 
