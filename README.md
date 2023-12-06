@@ -8,7 +8,7 @@
 
 </div>
 
-> [!WARN]
+> [!WARNING]
 > 
 > This project is a work in progress so expect bugs and missing features. (feel free to contribute)
 
