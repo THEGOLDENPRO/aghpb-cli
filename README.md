@@ -2,7 +2,7 @@
 
   # 💽 aghpb-cli
 
-  <sub>Fresh anime girls right from the comfort of your command line.</sub>
+  <sub>Fresh anime girls holdiong programming books right from the comfort of your command line.</sub>
 
   [[Preview Video]](https://github.com/THEGOLDENPRO/aghpb-cli/assets/66202304/8a153986-0ed2-4b6d-92a0-a8729faa0d7d)
 
