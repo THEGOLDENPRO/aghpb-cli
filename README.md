@@ -30,12 +30,12 @@ cd aghpb-cli
 Now if you have make you may just run these commands and you're done:
 ```sh
 make # build
-make install # install to bin
+sudo make install # install to bin
 ```
 If you don't have make for some reason here you go:
 ```sh
 cargo build --release
-cp ./target/release/aghpb-cli /usr/local/bin
+sudo cp ./target/release/aghpb-cli /usr/local/bin
 ```
 
 #### Windows 🪟
