@@ -18,9 +18,9 @@ aghpb-cli {query}
 ```
 
 ### Installation 🛠️
-I don't plan on releasing to any package managers any time soon so for now you must install from source.
+I don't plan on releasing to any package managers any time soon so for now you must install from source (like a real man).
 
-Prerequisites: **[``git``](https://git-scm.com/downloads), [``rust-lang``](https://www.rust-lang.org/tools/install), ``make`` (not required)**
+Prerequisites: **[``git``](https://git-scm.com/downloads), [``rust-lang``](https://www.rust-lang.org/tools/install), ``make`` (recommended)**
 
 #### Linux 🐧
 ```sh
@@ -32,11 +32,7 @@ Now if you have make you may just run these commands and you're done:
 make # build
 sudo make install # install to bin
 ```
-If you don't have make for some reason here you go:
-```sh
-cargo build --release
-sudo cp ./target/release/aghpb-cli /usr/local/bin
-```
+If you don't have make for some reason go and copy the code from the [makefile](https://github.com/THEGOLDENPRO/aghpb-cli/blob/master/Makefile) yourself but try the make command anyways you might already have it and I highly recommend you install it.
 
 #### Windows 🪟
 *too lazy to add the instructions, someone do it for me* 😴
