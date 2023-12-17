@@ -5,6 +5,12 @@ use owo_colors::{colors::{*, css::{OrangeRed, MediumPurple}, xterm::DarkPurple},
 const TEMP_DIR: &str = "/aghpb-cli";
 const TEMP_BOOK_NAME: &str = "/-_-.png";
 
+const HELP_MSG: &str = "
+USAGE: aghpb-cli {{query}}
+
+--help: Shows this message.
+";
+
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
     check_dir();
@@ -51,11 +57,7 @@ fn ask_query(cmd_args: Vec<String>) -> Option<String> {
     };
 
     if query == "--help" {
-        println!("
-USAGE: aghpb-cli {{query}}
-
---help: Shows this message.
-        ");
+        println!("{}", HELP_MSG);
         return None;
     }
 
