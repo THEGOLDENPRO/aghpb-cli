@@ -1,13 +1,16 @@
 use bytes::Bytes;
-use std::{env::{self, var}, process::Command, error::Error, io::{self, Write, BufRead}, fs};
-use owo_colors::{colors::{*, css::{OrangeRed, MediumPurple}, xterm::DarkPurple}, OwoColorize};
+use std::{env::{self, var}, process::Command, error::Error, io::{self, Write, BufRead}, fs, num::IntErrorKind};
+use owo_colors::colors::{*, css::{OrangeRed, MediumPurple}, xterm::PurplePizzazz};
 
 const TEMP_DIR: &str = "/aghpb-cli";
 const TEMP_BOOK_NAME: &str = "/-_-.png";
+const DEFAULT_LIMIT: u8 = 15;
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const HELP_MSG: &str = "
-USAGE: aghpb-cli {{query}}
+USAGE: aghpb-cli {query} {limit}
 
+--version: Shows current version.
 --help: Shows this message.
 ";
 
@@ -18,19 +21,20 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let cmd_args: Vec<String> = env::args().collect();
 
-    let query = ask_query(cmd_args);
+    let (query, limit) = parse_query(cmd_args);
 
     if !query.is_none() {
-        println!("{}\n", "Searching...".fg::<BrightBlue>());
+        let query = query.unwrap();
+        println!("{}\n", owo_colors::OwoColorize::fg::<BrightBlue>(&format!("Searching '{}'...", query)));
 
-        let books = aghpb::search(query.unwrap(), None, Some(25)).await?;
+        let books = aghpb::search(query, None, Some(limit)).await?;
 
         for (index, book) in books.iter().enumerate() {
             println!(
                 "{}) {} [{}]", 
                 index + 1, 
-                book.name.fg::<OrangeRed>(), 
-                book.commit_author.fg::<Black>()
+                owo_colors::OwoColorize::fg::<OrangeRed>(&book.name), 
+                owo_colors::OwoColorize::fg::<Black>(&book.commit_author)
             );
         }
 
@@ -38,7 +42,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             format!("\nSelect your book ({} - {}): ", 1, books.len())
         ).expect("We failed to grab your input!");
 
-        println!("{}", "Getting book...".fg::<BrightBlue>());
+        println!("{}", owo_colors::OwoColorize::fg::<BrightBlue>(&"Getting book..."));
         let chosen_book = &books[choice.parse::<usize>().expect("Failed to parse your choice into an integer.") - 1];
         let chosen_book = chosen_book.get_book().await.expect("Failed to get book's image!");
 
@@ -49,32 +53,55 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 
-fn ask_query(cmd_args: Vec<String>) -> Option<String> {
+fn parse_query(mut cmd_args: Vec<String>) -> (Option<String>, u8) {
+    let limit_arg_maybe = &cmd_args[cmd_args.len() - 1];
+
+    let limit = match limit_arg_maybe.parse::<u8>() {
+        Ok(v) => {
+            cmd_args.pop();
+            v
+        },
+        Err(e) => {
+            match e.kind() {
+                IntErrorKind::PosOverflow => {
+                    cmd_args.pop();
+                    u8::MAX
+                },
+                _ => DEFAULT_LIMIT
+            }
+        },
+    };
+
     let query = if cmd_args.len() <= 1 {
-        input(format!("{}", "Enter Query: ".fg::<DarkPurple>())).expect("Failed to grab query from you!")
+        input(format!("{}", owo_colors::OwoColorize::fg::<PurplePizzazz>(&"Enter Query: "))).expect("Failed to grab query from you!")
     } else {
         cmd_args[1..].join(" ")
     };
 
     if query == "--help" {
         println!("{}", HELP_MSG);
-        return None;
+        return (None, limit);
+    }
+
+    if query == "--version" {
+        println!("{} --> {}", owo_colors::OwoColorize::fg::<BrightBlue>(&"Version"), owo_colors::OwoColorize::fg::<OrangeRed>(&VERSION));
+        return (None, limit);
     }
 
     if query == "" {
         println!("Uhhh, enter a query idiot!");
-        ask_query(cmd_args)
+        parse_query(cmd_args)
     } else {
-        Some(query)
+        (Some(query), limit)
     }
 }
 
 fn display_book(raw_bytes: Bytes) {
-    println!("{}", "Writing image...".fg::<BrightWhite>());
+    println!("{}", owo_colors::OwoColorize::fg::<BrightWhite>(&"Writing image..."));
 
     fs::write(get_path(Some(TEMP_BOOK_NAME)), raw_bytes).expect("Failed to write book to disk!");
 
-    println!("{}", "Displaying book...".fg::<MediumPurple>());
+    println!("{}", owo_colors::OwoColorize::fg::<MediumPurple>(&"Displaying book..."));
 
     let process = if cfg!(target_os = "windows") {
         Command::new("cmd")
