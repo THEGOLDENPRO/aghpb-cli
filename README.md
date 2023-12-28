@@ -14,9 +14,9 @@
 
 ## Usage 🖱️
 ```sh
-aghpb-cli {query}
+aghpb-cli {query} {limit}
 ```
-Check out help for more: ``aghpb-cli --help``
+> Check out the help command for more: ``aghpb-cli --help``
 
 ## Installation 🛠️
 I don't plan on releasing to any package managers any time soon so for now you must install from source (like a real man).
@@ -37,3 +37,4 @@ sudo make install # install to bin
 
 ### Windows 🪟
 *too lazy to add the instructions, someone do it for me* 😴
+like fr!
