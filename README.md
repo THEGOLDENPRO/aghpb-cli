@@ -31,7 +31,7 @@ cd aghpb-cli
 Now if you have 'make' you may just run these commands and you're done:
 ```sh
 make # build
-sudo make install # install to bin
+make install # install to bin
 ```
 > If you don't have 'make' for some reason go and copy the code from the [makefile](https://github.com/THEGOLDENPRO/aghpb-cli/blob/master/Makefile) yourself but try the make command at least you might already have it and I highly recommend you install it.
 
