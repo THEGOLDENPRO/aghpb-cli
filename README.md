@@ -34,6 +34,7 @@ Prerequisites: **[``wget``]()**
 #### Linux 🐧
 ```sh
 wget https://github.com/THEGOLDENPRO/aghpb-cli/releases/latest/download/aghpb-cli && mv ./aghpb-cli ~/.local/bin
+chmod +x ~/.local/bin/aghpb-cli
 ```
 
 #### Windows 🪟
