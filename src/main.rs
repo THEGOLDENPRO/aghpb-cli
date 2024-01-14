@@ -1,6 +1,6 @@
-use std::{env::{self}, error::Error, num::IntErrorKind, fs};
+use std::{env::{self}, error::Error, fs};
 use owo_colors::colors::{*, css::OrangeRed, xterm::PurplePizzazz};
-use utils::{check_dir, fix_win_colour, input, get_path, display_image};
+use utils::{check_dir, fix_win_colour, input, get_path, display_image, process_flags};
 
 mod utils;
 
@@ -10,11 +10,16 @@ const DEFAULT_LIMIT: u8 = 15;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const HELP_MSG: &str = "
-USAGE: aghpb-cli {query} {limit}
+USAGE: aghpb-cli [options] {query}
 
---last: Displays the last image you queried.
---version: Shows current version.
---help: Shows this message.
+Options:
+    -l or -limit: Changes the amount of results returned by the API. Default is 15.
+    -c or -category: The book category to filter the search by.
+
+Flags:
+    --last: Displays the last image you queried.
+    --version: Shows current version.
+    --help: Shows this message.
 ";
 
 #[tokio::main(flavor = "current_thread")]
@@ -24,13 +29,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let cmd_args: Vec<String> = env::args().collect();
 
-    let (query, limit) = parse_query(cmd_args);
+    let (query, category, limit) = parse_query((&cmd_args[1..]).to_vec());
 
     if !query.is_none() {
         let query = query.unwrap();
-        println!("{}\n", owo_colors::OwoColorize::fg::<BrightBlue>(&format!("Searching '{}'...", query)));
+        println!(
+            "Searching for '{}' with results limited to {}...\n", 
+            owo_colors::OwoColorize::fg::<BrightBlue>(&query), 
+            owo_colors::OwoColorize::fg::<OrangeRed>(&limit)
+        );
 
-        let books = aghpb::search(query, None, Some(limit)).await?;
+        let books = aghpb::search(query, category, Some(limit)).await?;
 
         for (index, book) in books.iter().enumerate() {
             println!(
@@ -60,52 +69,57 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 
-fn parse_query(mut cmd_args: Vec<String>) -> (Option<String>, u8) {
-    let limit_arg_maybe = &cmd_args[cmd_args.len() - 1];
+fn parse_query(cmd_args: Vec<String>) -> (Option<String>, Option<String>, u8) {
+    let mut query: Option<String> = None;
+    let mut category: Option<String> = None;
 
-    let limit = match limit_arg_maybe.parse::<u8>() {
-        Ok(v) => {
-            cmd_args.pop();
-            v
-        },
-        Err(e) => {
-            match e.kind() {
-                IntErrorKind::PosOverflow => {
-                    cmd_args.pop();
-                    u8::MAX
-                },
-                _ => DEFAULT_LIMIT
+    let mut limit = DEFAULT_LIMIT;
+
+    let mut args = cmd_args.iter();
+
+    while let Some(arg) = args.next() {
+        println!("{}", arg);
+
+        if arg.starts_with("--"){
+            if process_flags(arg) {
+                return (None, None, limit)
             }
-        },
-    };
-
-    let query = if cmd_args.len() <= 1 {
-        input(format!("{}", owo_colors::OwoColorize::fg::<PurplePizzazz>(&"Enter Query: "))).expect("Failed to grab query from you!")
-    } else {
-        cmd_args[1..].join(" ")
-    };
-
-    if query.contains("--") {
-
-        if query == "--help" {
-            println!("{}", HELP_MSG);
-        } else if query == "--version" {
-            println!(
-                "{} --> {}", 
-                owo_colors::OwoColorize::fg::<BrightBlue>(&"Version"), 
-                owo_colors::OwoColorize::fg::<OrangeRed>(&VERSION)
-            );
-        } else if query == "--last" {
-            display_image(get_path(Some(TEMP_BOOK_NAME)));
         }
 
-        return (None, limit);
+        if arg.starts_with("-") {
+            let next_arg = args.nth(0).expect("Invalid option syntax!");
+
+            println!(">> {}", next_arg);
+
+            if arg == "-l" || arg == "-limit" {
+                limit = next_arg.parse::<u8>().expect("Failed to parse limit!");
+            } else if arg == "-c" || arg == "-cat" || arg == "-category" {
+                category = Some(next_arg.to_string());
+            }
+
+            continue;
+
+        } else {
+            let mut _query = arg.to_owned();
+            _query.extend(args.map(|x| format!(" {}", x).to_string()));
+
+            query = Some(_query);
+            break;
+        }
     }
 
-    if query == "" {
-        println!("Uhhh, enter a query idiot!");
-        parse_query(cmd_args)
-    } else {
-        (Some(query), limit)
+    if query.is_none() {
+        query = Some(
+            input(format!("{}", owo_colors::OwoColorize::fg::<PurplePizzazz>(&"Enter Query: "))).expect(
+                "Failed to grab query from you!"
+            )
+        );
     }
+
+    if query == Some("".into()) {
+        query = None;
+        println!("Uhhh, enter the query properly idiot!");
+    }
+
+    (query, category, limit)
 }

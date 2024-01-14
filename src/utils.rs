@@ -1,7 +1,7 @@
 use std::{process::{Command, Stdio}, io::{self, Write, BufRead}, env::var, fs};
 use owo_colors::colors::css::MediumPurple;
 
-use crate::TEMP_DIR;
+use crate::{TEMP_DIR, HELP_MSG, VERSION, TEMP_BOOK_NAME};
 
 pub fn display_image(path: String) {
     println!("{}", owo_colors::OwoColorize::fg::<MediumPurple>(&"Displaying book..."));
@@ -20,6 +20,28 @@ pub fn display_image(path: String) {
     };
 
     process.expect("Failed to open image of book!");
+}
+
+pub fn process_flags(flag: &String) -> bool {
+    match flag.as_str() {
+        "--help" => {
+            println!("{}", HELP_MSG);
+            true
+        },
+        "--version" => {
+            println!(
+                "{} --> {}", 
+                owo_colors::OwoColorize::fg::<owo_colors::colors::BrightBlue>(&"Version"), 
+                owo_colors::OwoColorize::fg::<owo_colors::colors::css::OrangeRed>(&VERSION)
+            );
+            true
+        },
+        "--last" => {
+            display_image(get_path(Some(TEMP_BOOK_NAME)));
+            true
+        }
+        _ => false
+    }
 }
 
 /// Python like input function I totally didn't steal.
