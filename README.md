@@ -14,7 +14,7 @@
 
 ## Usage 🖱️
 ```sh
-aghpb-cli {query} {limit}
+aghpb-cli [options] {query}
 ```
 > Check out the help command for more: ``aghpb-cli --help``
 
