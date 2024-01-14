@@ -78,8 +78,6 @@ fn parse_query(cmd_args: Vec<String>) -> (Option<String>, Option<String>, u8) {
     let mut args = cmd_args.iter();
 
     while let Some(arg) = args.next() {
-        println!("{}", arg);
-
         if arg.starts_with("--"){
             if process_flags(arg) {
                 return (None, None, limit)
@@ -88,8 +86,6 @@ fn parse_query(cmd_args: Vec<String>) -> (Option<String>, Option<String>, u8) {
 
         if arg.starts_with("-") {
             let next_arg = args.nth(0).expect("Invalid option syntax!");
-
-            println!(">> {}", next_arg);
 
             if arg == "-l" || arg == "-limit" {
                 limit = next_arg.parse::<u8>().expect("Failed to parse limit!");
