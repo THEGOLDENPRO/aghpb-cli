@@ -8,9 +8,9 @@
 
 </div>
 
-> [!WARNING]
+> [!Note]
 > 
-> This project is a work in progress so expect bugs and missing features. (feel free to contribute)
+> This project is a work in progress so expect bugs and missing features. (feel free to contribute and report any bugs)
 
 ## Usage 🖱️
 ```sh
@@ -24,6 +24,9 @@ Check out the help command for more: ``aghpb-cli --help``
 
 ## Installation 🛠️
 I don't plan on releasing to any package managers any time soon so for now you have two options, install from source (like a real man) or use my already published binary.
+
+> [!Warning]
+> On Linux if the ``aghpb-cli`` command doesn't work you may need to add the ``~/.local/bin`` directory to your path. You can do so by adding ``export PATH=$PATH:~/.local/bin`` to your ``.bashrc`` if you're using that.
 
 ### Install the binary 🧑‍💻
 Prerequisites: **[``wget``]()**
