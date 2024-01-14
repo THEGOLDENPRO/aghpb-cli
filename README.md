@@ -16,7 +16,11 @@
 ```sh
 aghpb-cli [options] {query}
 ```
-> Check out the help command for more: ``aghpb-cli --help``
+> Here's an example with ``rust`` being the book category and [``mai``](https://myanimelist.net/character/118739/Mai_Sakurajima) the anime character:
+> ```sh
+> aghpb-cli -c rust mai
+> ```
+Check out the help command for more: ``aghpb-cli --help``
 
 ## Installation 🛠️
 I don't plan on releasing to any package managers any time soon so for now you have two options, install from source (like a real man) or use my already published binary.
