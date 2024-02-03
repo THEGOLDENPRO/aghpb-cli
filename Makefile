@@ -2,10 +2,10 @@ build:
 	cargo build --release
 
 install:
-	cp ./target/release/aghpb-cli ~/.local/bin
+	cargo install --path .
 
 uninstall:
-	rm ~/.local/bin/aghpb-cli
+	cargo uninstall
 
 clean:
 	cargo clean

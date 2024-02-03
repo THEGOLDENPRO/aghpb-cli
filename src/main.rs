@@ -13,6 +13,7 @@ const HELP_MSG: &str = "
 USAGE: aghpb-cli [options] {query}
 
 Options:
+    -s or -select: Pre-selects search options for you.
     -l or -limit: Changes the amount of results returned by the API. Default is 15.
     -c or -category: The book category to filter the search by.
 
@@ -29,7 +30,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let cmd_args: Vec<String> = env::args().collect();
 
-    let (query, category, limit) = parse_query((&cmd_args[1..]).to_vec());
+    let (
+        query, 
+        category, 
+        mut select, 
+        limit
+    ) = parse_query((&cmd_args[1..]).to_vec());
 
     if !query.is_none() {
         let query = query.unwrap();
@@ -41,21 +47,30 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
         let books = aghpb::search(query, category, Some(limit)).await?;
 
-        for (index, book) in books.iter().enumerate() {
-            println!(
-                "{}) {} [{}]", 
-                index + 1, 
-                owo_colors::OwoColorize::fg::<OrangeRed>(&book.name), 
-                owo_colors::OwoColorize::fg::<Black>(&book.commit_author)
+        if select == None {
+            for (index, book) in books.iter().enumerate() {
+                println!(
+                    "{}) {} [{}]", 
+                    index + 1, 
+                    owo_colors::OwoColorize::fg::<OrangeRed>(&book.name), 
+                    owo_colors::OwoColorize::fg::<Black>(&book.commit_author)
+                );
+            }
+
+            select = Some(
+                input(
+                format!("\nSelect your book ({} - {}): ", 1, books.len())).expect(
+                    "We failed to grab your input!"
+                )
             );
         }
 
-        let choice = input(
-            format!("\nSelect your book ({} - {}): ", 1, books.len())
-        ).expect("We failed to grab your input!");
-
         println!("{}", owo_colors::OwoColorize::fg::<BrightBlue>(&"Getting book..."));
-        let chosen_book = &books[choice.parse::<usize>().expect("Failed to parse your choice into an integer.") - 1];
+
+        let chosen_book = &books.get(
+            select.unwrap().parse::<usize>().expect("Failed to parse your choice into an integer.").checked_sub(1).unwrap_or(0)
+        ).unwrap();
+
         let chosen_book = chosen_book.get_book().await.expect("Failed to get book's image!");
 
         println!("{}", owo_colors::OwoColorize::fg::<BrightWhite>(&"Writing image..."));
@@ -69,18 +84,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 
-fn parse_query(cmd_args: Vec<String>) -> (Option<String>, Option<String>, u8) {
+fn parse_query(cmd_args: Vec<String>) -> (Option<String>, Option<String>, Option<String>, u8) {
     let mut query: Option<String> = None;
     let mut category: Option<String> = None;
 
     let mut limit = DEFAULT_LIMIT;
+    let mut select: Option<String> = None;
 
     let mut args = cmd_args.iter();
 
     while let Some(arg) = args.next() {
         if arg.starts_with("--"){
             if process_flags(arg) {
-                return (None, None, limit)
+                return (None, None, select, limit)
             }
         }
 
@@ -91,6 +107,8 @@ fn parse_query(cmd_args: Vec<String>) -> (Option<String>, Option<String>, u8) {
                 limit = next_arg.parse::<u8>().expect("Failed to parse limit!");
             } else if arg == "-c" || arg == "-cat" || arg == "-category" {
                 category = Some(next_arg.to_string());
+            } else if arg == "-s" || arg == "-select" {
+                select = Some(next_arg.to_string());
             }
 
             continue;
@@ -117,5 +135,5 @@ fn parse_query(cmd_args: Vec<String>) -> (Option<String>, Option<String>, u8) {
         println!("Uhhh, enter the query properly idiot!");
     }
 
-    (query, category, limit)
+    (query, category, select, limit)
 }

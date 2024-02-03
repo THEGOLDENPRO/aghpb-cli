@@ -39,7 +39,7 @@ pub fn process_flags(flag: &String) -> bool {
         "--last" => {
             display_image(get_path(Some(TEMP_BOOK_NAME)));
             true
-        }
+        },
         _ => false
     }
 }

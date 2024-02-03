@@ -26,15 +26,15 @@ Check out the help command for more: ``aghpb-cli --help``
 I don't plan on releasing to any package managers any time soon so for now you have two options, install from source (like a real man) or use my already published binary.
 
 > [!Warning]
-> On Linux if the ``aghpb-cli`` command doesn't work you may need to add the ``~/.local/bin`` directory to your path. You can do so by adding ``export PATH=$PATH:~/.local/bin`` to your ``.bashrc`` if you're using that.
+> On Linux if the ``aghpb-cli`` command doesn't work you may need to add the ``~/.cargo/bin`` directory to your path if you . You can do so by adding ``export PATH=$PATH:~/.cargo/bin`` to your ``.bashrc`` or an equivalent.
 
 ### Install the binary 🧑‍💻
-Prerequisites: **[``wget``]()**
+Prerequisites: **[``wget``](https://www.gnu.org/software/wget/)**
 
 #### Linux 🐧
 ```sh
-wget https://github.com/THEGOLDENPRO/aghpb-cli/releases/latest/download/aghpb-cli && mv ./aghpb-cli ~/.local/bin
-chmod +x ~/.local/bin/aghpb-cli
+wget https://github.com/THEGOLDENPRO/aghpb-cli/releases/latest/download/aghpb-cli && sudo mv ./aghpb-cli /usr/local/bin
+sudo chmod +x /usr/local/bin/aghpb-cli
 ```
 
 #### Windows 🪟
