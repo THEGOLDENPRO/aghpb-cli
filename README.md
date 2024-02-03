@@ -6,6 +6,8 @@
 
   [[Preview Video]](https://github.com/THEGOLDENPRO/aghpb-cli/assets/66202304/8a153986-0ed2-4b6d-92a0-a8729faa0d7d)
 
+  [[Preview Video 2]](https://github.com/THEGOLDENPRO/aghpb-cli/assets/66202304/f55176d1-b43c-4e15-97a1-220bc1f3ce39)
+
 </div>
 
 > [!Note]
